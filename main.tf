@@ -128,7 +128,7 @@ resource "aws_security_group" "scraper_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = []
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -299,7 +299,6 @@ resource "aws_lb_target_group" "web_tg" {
     unhealthy_threshold = 3
   }
 }
-
 
 resource "aws_lb_listener" "web_http_listener" {
   load_balancer_arn = aws_lb.web_lb.arn
