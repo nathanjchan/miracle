@@ -86,7 +86,7 @@ sh build_and_push_images.sh
 sh deploy_infrastructure.sh
 ```
 
-After a few minutes, everything should be deployed in the real cloud. In Terminal, you should see the link to the load balancer, like this `web-alb-1457933108.us-east-1.elb.amazonaws.com`. This is where the frontend website is hosted.
+After a few minutes, everything should be deployed in the real cloud. In Terminal, you should see the link to the load balancer where you can access the frontend, like this `http://web-alb-1152114135.us-east-1.elb.amazonaws.com/` (this link works; it goes to the frontend hosted on my AWS account).
 
 The Terraform AWS configuration will:
 - Create an AWS VPC: the VPC has two public and two private subnets
