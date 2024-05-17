@@ -1,0 +1,17 @@
+{
+  "name": "my-nextjs-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "next": "latest",
+    "pg": "^8.7.1",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "^2.0.10"
+  }
+}
