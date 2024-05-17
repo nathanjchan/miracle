@@ -1,4 +1,16 @@
 # Variables
+variable "db_user" {
+  type = string
+}
+
+variable "db_name" {
+  type = string
+}
+
+variable "db_port" {
+  type = string
+}
+
 variable "db_password" {
   type      = string
   sensitive = true
@@ -107,10 +119,10 @@ resource "aws_security_group" "web_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    security_groups = [aws_security_group.web_lb_sg.id]
   }
 
   egress {
@@ -204,8 +216,8 @@ resource "aws_ecs_task_definition" "web" {
   family                   = "web-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "256"
+  memory                   = "512"
 
   container_definitions = jsonencode([
     {
@@ -214,18 +226,32 @@ resource "aws_ecs_task_definition" "web" {
       essential = true
       portMappings = [
         {
-          containerPort = 80
-          hostPort      = 80
+          containerPort = 3000
+          hostPort      = 3000
         }
       ]
       environment = [
         {
           name  = "DATABASE_HOST"
-          value = aws_db_instance.main.endpoint
+          # required workaround to get the hostname without the port
+          # https://github.com/hashicorp/terraform/issues/4996
+          value = "${element(split(":", aws_db_instance.main.endpoint), 0)}"
         },
         {
           name  = "DATABASE_PASSWORD"
           value = var.db_password
+        },
+        {
+          name  = "DATABASE_NAME"
+          value = var.db_name
+        },
+        {
+          name  = "DATABASE_USER"
+          value = var.db_user
+        },
+        {
+          name  = "DATABASE_PORT"
+          value = var.db_port
         }
       ]
       logConfiguration = {
@@ -257,11 +283,24 @@ resource "aws_ecs_task_definition" "scraper" {
       environment = [
         {
           name  = "DATABASE_HOST"
-          value = aws_db_instance.main.endpoint
+          value = "${element(split(":", aws_db_instance.main.endpoint), 0)}"
+
         },
         {
           name  = "DATABASE_PASSWORD"
           value = var.db_password
+        },
+        {
+          name  = "DATABASE_NAME"
+          value = var.db_name
+        },
+        {
+          name  = "DATABASE_USER"
+          value = var.db_user
+        },
+        {
+          name  = "DATABASE_PORT"
+          value = var.db_port
         }
       ]
       logConfiguration = {
@@ -288,12 +327,11 @@ resource "aws_ecs_service" "web" {
   load_balancer {
     target_group_arn = aws_lb_target_group.web_tg.arn
     container_name   = "web-container"
-    container_port   = 80
+    container_port   = 3000
   }
   network_configuration {
-    subnets         = aws_subnet.public[*].id
+    subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.web_sg.id]
-    assign_public_ip = true
   }
   depends_on = [
     aws_lb.web_lb,
@@ -310,7 +348,6 @@ resource "aws_ecs_service" "scraper" {
   network_configuration {
     subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.scraper_sg.id]
-    assign_public_ip = true
   }
 }
 
@@ -319,7 +356,7 @@ resource "aws_lb" "web_lb" {
   name               = "web-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.web_sg.id]
+  security_groups    = [aws_security_group.web_lb_sg.id]
   subnets            = aws_subnet.public[*].id
 }
 
@@ -350,9 +387,27 @@ resource "aws_lb_listener" "web_http_listener" {
   }
 }
 
+resource "aws_security_group" "web_lb_sg" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # Output RDS Endpoint
 output "rds_endpoint" {
-  value = aws_db_instance.main.endpoint
+  value = "${element(split(":", aws_db_instance.main.endpoint), 0)}"
 }
 
 # Output Load Balancer DNS
