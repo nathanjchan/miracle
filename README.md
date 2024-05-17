@@ -61,6 +61,8 @@ Unit testing: I looked for an opportunity to put unit tests, but since nearly al
 
 ## Bonus Part 5: Deploy to AWS with Terraform
 
+(WORK IN PROGRESS)
+
 First, install Terraform: https://developer.hashicorp.com/terraform/install
 
 Second, install AWS CLI 2: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
