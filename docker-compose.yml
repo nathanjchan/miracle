@@ -33,7 +33,7 @@ services:
   database:
     image: postgres:13
     environment:
-      - POSTGRES_PASSWORD=miraclepassword
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     ports:
       - "${DATABASE_PORT}:${DATABASE_PORT}"
     volumes:
