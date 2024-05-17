@@ -168,6 +168,17 @@ resource "aws_db_subnet_group" "main" {
   subnet_ids = aws_subnet.private[*].id
 }
 
+resource "aws_db_parameter_group" "custom_pg" {
+  name        = "custom-pg"
+  family      = "postgres16"
+  description = "Enable SSL for RDS instance."
+
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+}
+
 resource "aws_db_instance" "main" {
   identifier              = "miracle-db"
   engine                  = "postgres"
@@ -182,6 +193,7 @@ resource "aws_db_instance" "main" {
   # Additional settings
   skip_final_snapshot     = true
   publicly_accessible     = false
+  parameter_group_name    = aws_db_parameter_group.custom_pg.name
 }
 
 # ECS Cluster
@@ -252,6 +264,10 @@ resource "aws_ecs_task_definition" "web" {
         {
           name  = "DATABASE_PORT"
           value = var.db_port
+        },
+        {
+          "name": "PGSSLMODE",
+          "value": "disable"
         }
       ]
       logConfiguration = {
@@ -301,6 +317,10 @@ resource "aws_ecs_task_definition" "scraper" {
         {
           name  = "DATABASE_PORT"
           value = var.db_port
+        },
+        {
+          "name": "PGSSLMODE",
+          "value": "disable"
         }
       ]
       logConfiguration = {

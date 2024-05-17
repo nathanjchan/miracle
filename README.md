@@ -4,8 +4,11 @@
 
 Since this is not in production, I will just the .env here. Put it in the root of this repository:
 ```
+TF_VAR_db_user=postgres
+TF_VAR_db_name=postgres
+TF_VAR_db_port=5432
 TF_VAR_db_password=miraclepassword
-TF_VAR_aws_account_id=123456789012
+TF_VAR_aws_account_id=862592418544
 TF_VAR_aws_region=us-east-1
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
@@ -61,8 +64,6 @@ Unit testing: Since nearly all the code is communication between containers and 
 
 ## Bonus Part 5: Deploy to AWS with Terraform
 
-(WORK IN PROGRESS) Web service is seg faulting, no idea why.
-
 First, install Terraform: https://developer.hashicorp.com/terraform/install
 
 Second, install AWS CLI 2: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
@@ -89,12 +90,12 @@ After a few minutes, everything should be deployed in the real cloud. In Termina
 
 The Terraform AWS configuration will:
 - Create an AWS VPC: the VPC has two public and two private subnets
-- Create a load balancer
+- Create a load balancer, on the public subnet
 - Create an ECS cluster: the cluster has 2 ECS services, one for each container, each service with a task definition
-- Create an RDS Postgres database
-- The 2 ECS services and RDS database each have a security group. The website service uniquely has a load balancer.
-- The subnets and security groups are configured such that the website is public, the scraper is private, and the database only allows traffic from the website and scraper.
+- Create an RDS Postgres database, with  its own private subnet
+- The 2 ECS services, RDS database, and load balancer have a security group
+- The subnets and security groups are configured such that the load balancer is public, the website and scraper are private, and the database only allows traffic from the website and scraper.
 
 Note that this AWS deployment is different from the local deployment; instead of putting Postgres in a container, this creates a Postgres in RDS, and communication is done within the VPC instead of the Docker Compose network.
 
-The website does not have HTTPS. It is essential and probably won't be too hard to add to the Terraform file.
+The website and database do not have HTTPS/SSL encryption. Encryption is essential for production, but for this project, no SSL certificates allows easier deployment both locally and on AWS without extra configuration.
