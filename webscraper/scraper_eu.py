@@ -1,12 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
 from db_utils import connect_to_db, do_query
+import time
 
-def fetch_trials():
+def fetch_trials(max_retries=3, retry_delay=2):
     url = "https://www.clinicaltrialsregister.eu/ctr-search/search?query="
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.text
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.text
+        except requests.exceptions.RequestException as e:
+            attempts += 1
+            print(f"An error occurred while fetching data: {e}. Attempt {attempts} of {max_retries}.")
+            if attempts < max_retries:
+                time.sleep(retry_delay)
+    print("Max retries reached. Returning an empty result.")
+    return ""
 
 def parse_trial(trial):
     eudract_number = trial.find('span', class_='label', string='EudraCT Number:').find_next_sibling(string=True).strip() if trial.find('span', class_='label', string='EudraCT Number:') else None

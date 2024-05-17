@@ -1,16 +1,23 @@
 import requests
 import json
 from db_utils import connect_to_db, do_query
+import time
 
-def fetch_clinical_studies():
+def fetch_clinical_studies(max_retries=3, retry_delay=2):
     url = "https://clinicaltrials.gov/api/v2/studies?pageSize=100"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json().get('studies', [])
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred while fetching data: {e}")
-        return []
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.json().get('studies', [])
+        except requests.exceptions.RequestException as e:
+            attempts += 1
+            print(f"An error occurred while fetching data: {e}. Attempt {attempts} of {max_retries}.")
+            if attempts < max_retries:
+                time.sleep(retry_delay)
+    print("Max retries reached. Returning an empty list.")
+    return []
 
 def parse_data(study):
     return {
