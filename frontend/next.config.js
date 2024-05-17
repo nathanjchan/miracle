@@ -6,4 +6,7 @@ module.exports = {
     DATABASE_NAME: process.env.DATABASE_NAME,
     DATABASE_PORT: process.env.DATABASE_PORT,
   },
+  serverRuntimeConfig: {
+    port: 80,
+  },
 };

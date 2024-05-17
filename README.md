@@ -57,11 +57,11 @@ Docker: by using Docker Compose, all containers are connected to the same "netwo
 
 Browser-based scraping: I had trouble getting Selenium or Playwright to work with the csv export button on ClinicalTrials.gov; there is a modal that needs to appear before downloading, and neither tool would recognize the modal was visible. I used the Clinical Trials API, which is best practice, since it is much more customizable and faster.
 
-Unit testing: I looked for an opportunity to put unit tests, but since nearly all the code is communication between containers and servers and there is no algorithmic logic, I did not add tests.
+Unit testing: Since nearly all the code is communication between containers and servers, I did not find a good opportunity to add any useful unit tests.
 
 ## Bonus Part 5: Deploy to AWS with Terraform
 
-(WORK IN PROGRESS)
+(WORK IN PROGRESS) Web service is seg faulting, no idea why.
 
 First, install Terraform: https://developer.hashicorp.com/terraform/install
 
@@ -95,3 +95,6 @@ The Terraform AWS configuration will:
 - The 2 ECS services and RDS database each have a security group. The website service uniquely has a load balancer.
 - The subnets and security groups are configured such that the website is public, the scraper is private, and the database only allows traffic from the website and scraper.
 
+Note that this AWS deployment is different from the local deployment; instead of putting Postgres in a container, this creates a Postgres in RDS, and communication is done within the VPC instead of the Docker Compose network.
+
+The website does not have HTTPS. It is essential and probably won't be too hard to add to the Terraform file.
