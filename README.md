@@ -1,4 +1,6 @@
-# Miracle Take-Home Assessment
+# Miracle
+
+A project I did to play around with Terraform deployment to AWS and networking between containers.
 
 ## Part 0: Create a .env file
 
@@ -56,13 +58,7 @@ Website: this is a simple React Next.js website with 2 API functions, to query c
 
 Docker: by using Docker Compose, all containers are connected to the same "network", so can communicate with each other without extra networking work. The database's container has a volume, so that data can persist if the container stops. There are trade-offs between containerizing a database and putting on bare-metal like AWS RDS. For this project, it made more sense to put it in a container and immensely simplify the deployment process.
 
-## Part 4: Commentary
-
-Browser-based scraping: I had trouble getting Selenium or Playwright to work with the csv export button on ClinicalTrials.gov; there is a modal that needs to appear before downloading, and neither tool would recognize the modal was visible. I used the Clinical Trials API, which is best practice, since it is much more customizable and faster.
-
-Unit testing: Since nearly all the code is communication between containers and servers, I did not find a good opportunity to add any useful unit tests.
-
-## Bonus Part 5: Deploy to AWS with Terraform
+## Bonus Part 4: Deploy to AWS with Terraform
 
 First, install Terraform: https://developer.hashicorp.com/terraform/install
 
@@ -86,7 +82,7 @@ sh build_and_push_images.sh
 sh deploy_infrastructure.sh
 ```
 
-After a few minutes, everything should be deployed in the real cloud. In Terminal, you should see the link to the load balancer where you can access the frontend, like this `http://web-alb-1152114135.us-east-1.elb.amazonaws.com/` (this link works; it goes to the frontend hosted on my AWS account).
+After a few minutes, everything should be deployed in the real cloud. In Terminal, you should see the link to the load balancer where you can access the frontend, like this `http://web-alb-1152114135.us-east-1.elb.amazonaws.com/`.
 
 The Terraform AWS configuration will:
 - Create an AWS VPC: the VPC has two public and two private subnets
